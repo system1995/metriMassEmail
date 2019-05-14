@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Mass Email</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/jquery.dataTables.min.css" />
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-fileselect.js"></script>
+    <script src="js/jquery.validate.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/helpers.js"></script>
+    <style type="text/css">
+      .container {
+        margin: 0;
+      }
+      .error {
+        color: red;
+      }
+      #logs {
+        overflow: scroll;
+        height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid bg-light py-3">
+        <div align="center">
+            <h3>
+               <b>EMAIL</b> SENDER <br>
+               <small>This application will let you send Email with bridge hosts.</small>
+            </h3>
+        </div>
+        <hr>
+      <form id="massEmailForm" method="post" role="form" autocomplete="off">
+        <div class="messages"></div>
+        <div class="controls">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="hostsList">Hosts list *</label>
+                <input
+                  type="file"
+                  id="hostsList"
+                  name="hostsList"
+                  required="required"
+                />
+              </div>
+              <table id="tableHosts" class="table">
+                <thead hidden>
+                  <tr>
+                    <th scope="col">Host</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Select</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="emailsList">Emails list *</label>
+                <input
+                  type="file"
+                  id="emailsList"
+                  name="emailsList"
+                  required="required"
+                />
+              </div>
+              <table id="tableEmails" class="table">
+                <thead hidden>
+                  <tr>
+                    <th scope="col">Email</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Select</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div class="controls">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="hostsList">Number Of send / Host *</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="nbrSendHost"
+                  name="nbrSendHost"
+                  value="5"
+                  required="required"
+                />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="emailsList">Pause (ms) / Send *</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="pauseSend"
+                  name="pauseSend"
+                  value="2000"
+                  required="required"
+                />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="methodOfSend">Method of Send *</label>
+                <select
+                  class="form-control"
+                  id="methodOfSend"
+                  name="methodOfSend"
+                >
+                  <option value="alternatively">Alternatively</option>
+                  <option value="regularly">Regularly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div class="controls">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="fromEmail">From email </label>
+                <input
+                  id="fromEmail"
+                  type="email"
+                  name="fromEmail"
+                  class="form-control"
+                  placeholder="Please enter the From email"
+                />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="fromName">From name </label>
+                <input
+                  id="fromName"
+                  type="text"
+                  name="fromName"
+                  class="form-control"
+                  placeholder="Please enter the From name"
+                />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="replyToEmail">Reply to email </label>
+                <input
+                  id="replyToEmail"
+                  type="text"
+                  name="replyToEmail"
+                  class="form-control"
+                  placeholder="Please enter the Reply to email"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="subject">Subject *</label>
+              <input
+                id="subject"
+                type="text"
+                name="subject"
+                class="form-control"
+                placeholder="Please enter the Subject"
+                required="required"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="message">Message *</label>
+              <textarea
+                id="message"
+                name="message"
+                class="form-control"
+                placeholder="Message for me *"
+                rows="4"
+                required="required"
+                data-error="send a message."
+              ></textarea>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <button type="button" class="btn btn-success" id="start">
+              Start
+            </button>
+            <button type="button" class="btn btn-warning" id="stop" disabled>
+              Stop
+            </button>
+          </div>
+        </div>
+      </form>
+      <div class="col-xs-12" style="height:25px;"></div>
+      <div class="row">
+          <div class="col-md-1">  <h5>Informations statut</h5> </div>
+          <div class="col-md-11">
+              <table class="table table-dark">
+                <tbody>
+                    <thead>
+                        <tr>
+                          <th scope="col">Total hosts <span id="totalHosts" class="float-right">0</span></th>
+                          <th scope="col">Total emails <span id="totalEmails" class="float-right">0</span></th>
+                          <th scope="col">Total email sent <span id="totalEmailsSent" class="float-right">0</span></th>
+                          <th scope="col">Total email error <span id="totalEmailsError" class="float-right">0</span></th>
+                        </tr>
+                      </thead>
+                </tbody>
+              </table>
+            </div>
+
+          </div> 
+          <div class="row">   
+              <div class="col-md-1">  <h5>Logs</h5> </div>
+        <div class="col-md-11">
+          <div id="logs">
+            <table class="table table-dark">
+              <thead>
+                <tr>
+                  <th scope="col">Time</th>
+                  <th scope="col">Host</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Detail</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div> 
+        </div>
+      </div>
+      <hr>
+       <!-- Copyright -->
+     <div class="footer-copyright text-center py-3">© 2019 Copyright:
+        <a href="https://mdbootstrap.com/education/bootstrap/"> METRI Charaf</a>
+      </div>
+      <!-- Copyright -->
+    </div>
+    <div class="modal fade" id="waitModal" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-body">
+            <p>Wait Please, so the current operation finish :)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var selectedEmails = [],
+        selectedHosts = [],
+        stopStatut = 0,
+        pauseStatut = 0;
+        currentHost = 0;
+        currentEmail = 0;
+        currentEmailPerHost = 0;
+
+      function updateSelectedEmails() {
+        if ($(this).is(":checked")) {
+          selectedEmails.push(
+            $(this)
+              .closest("tr")
+              .children("td:first")
+              .text()
+          );
+        } else {
+          selectedEmails.splice(
+            selectedEmails.indexOf(
+              $(this)
+                .closest("tr")
+                .children("td:first")
+                .text()
+            ),
+            1
+          );
+        }
+        $("#totalEmails").html(selectedEmails.length);
+      }
+
+      async function fillHostsTable() {
+        var hosts;
+        selectedHosts = [];
+        await readFileContent($("#hostsList")[0].files[0])
+          .then(content => {
+            hosts = content.split("\n");
+          })
+          .catch(error => {
+            alert(error);
+            stop();
+            return;
+          });
+        for (var host of hosts) {
+          selectedHosts.push(host.replace(/\s/g, ""));
+        }
+        $("#totalHosts").html(selectedHosts.length);
+      }
+
+      async function fillEmailsTable() {
+        selectedEmails = [];
+        await readFileContent($("#emailsList")[0].files[0])
+          .then(content => {
+            emails = content.split("\n");
+          })
+          .catch(error => {
+            alert(error);
+            stop();
+            return;
+          });
+        for (var email of emails) {
+          selectedEmails.push(email.replace(/\s/g, ""));
+        }
+        $("#totalEmails").html(selectedEmails.length);
+      }
+
+      function addEventToCbEmail() {
+        $(".cbEmail").off("click");
+        $(".cbEmail").on("click", function() {
+          if ($(this).is(":checked")) {
+            selectedEmails.push(
+              $(this)
+                .closest("tr")
+                .children("td:first")
+                .text()
+            );
+          } else {
+            selectedEmails.splice(
+              selectedEmails.indexOf(
+                $(this)
+                  .closest("tr")
+                  .children("td:first")
+                  .text()
+              ),
+              1
+            );
+          }
+          $("#totalEmails").html(selectedEmails.length);
+        });
+      }
+
+      function addEventToCbHost() {
+        $(".cbHost").off("click");
+        $(".cbHost").on("click", function() {
+          if ($(this).is(":checked")) {
+            selectedHosts.push(
+              $(this)
+                .closest("tr")
+                .children("td:first")
+                .text()
+            );
+          } else {
+            selectedHosts.splice(
+              selectedHosts.indexOf(
+                $(this)
+                  .closest("tr")
+                  .children("td:first")
+                  .text()
+              ),
+              1
+            );
+          }
+          $("#totalHosts").html(selectedHosts.length);
+        });
+      }
+
+      function addToLog(time, host, email, status, detail, indexEmail) {
+        var color;
+        if (status.includes("Failed")) {
+          color = "red";
+        } else {
+          color = "white";
+        }
+        if (indexEmail == -1) {
+          $("#logs table > tbody").append(
+            "<tr><td>" +
+              time +
+              "</td><td><b>" +
+              host +
+              "</b></td><td>" +
+              email +
+              "</td><td>" +
+              status +
+              "</td><td>" +
+              detail.substring(0, 30) +
+              "</td></tr>"
+          );
+          console.log(
+            "%c<==>|--|" +
+              time +
+              "|--|" +
+              host +
+              "|--|" +
+              email +
+              "|--|" +
+              status +
+              "|--|" +
+              detail.substring(0, 50),
+            "background:black; color: " + color
+          );
+        } else {
+          $("#logs table > tbody").append(
+            "<tr><td>" +
+              time +
+              "</td><td>" +
+              host +
+              "</td><td><b>" +
+              email +
+              "</b></td><td>" +
+              status +
+              "</td><td>" +
+              detail.substring(0, 30) +
+              "</td></tr>"
+          );
+          console.log(
+            "(" +
+              indexEmail +
+              "//" +
+              selectedEmails.length +
+              ")|--|" +
+              time +
+              "|--|" +
+              host +
+              "|--|" +
+              email +
+              "|--|" +
+              status +
+              "|--|" +
+              detail.substring(0, 50)
+          );
+        }
+      }
+
+      function updateStats(stat) {
+        if (stat === "totalEmailsSent") {
+          $("#totalEmailsSent").text(
+            parseInt($("#totalEmailsSent").text()) + 1
+          );
+        } else {
+          $("#totalEmailsError").text(
+            parseInt($("#totalEmailsError").text()) + 1
+          );
+        }
+      }
+
+      function initStatsAndLogs() {
+        $("#logs table > tbody").empty();
+        $("#totalEmailsSent").text("0");
+        $("#totalEmailsError").text("0");
+      }
+
+      function sendEmail(
+        host,
+        subject,
+        msg,
+        to,
+        fromName,
+        fromEmail,
+        replyToEmail,
+        callback
+      ) {
+        var errorMsg;
+        $.ajax({
+          type: "POST",
+          url: host,
+          dataType: "json",
+          data: {
+            subject: subject,
+            msg: msg,
+            to: to,
+            fromName: fromName,
+            fromEmail: fromEmail,
+            replyToEmail: replyToEmail
+          },
+          success: function() {
+            callback();
+          },
+          error: function(err) {
+            callback(JSON.stringify(err));
+          }
+        });
+      }
+
+      function init() {
+        $.ajaxSetup({
+          async: true
+        });
+        $("#hostsList").fileselect({
+          allowedNumberOfFiles: 1,
+          allowedFileExtensions: ["txt"]
+        });
+
+        $("#emailsList").fileselect({
+          allowedNumberOfFiles: 1,
+          allowedFileExtensions: ["txt"]
+        });
+
+        $("#massEmailForm").validate({
+          ignore: [],
+          rules: {
+            hostsList: {
+              required: true
+            },
+            emailsList: {
+              required: true
+            },
+            nbrSendHost: {
+              required: true,
+              min: 1
+            },
+            pauseSend: {
+              required: true
+            },
+            fromEmail: {
+              email: true
+            },
+            fromName: {
+              minlength: 4,
+              maxlength: 30
+            },
+            replyToEmail: {
+              email: true
+            },
+            subject: {
+              required: true
+            },
+            message: {
+              required: true
+            }
+          },
+          errorPlacement: function(error, element) {
+            if (element.attr("type") == "file") {
+              error.appendTo(element.closest(".form-group"));
+            } else {
+              error.insertAfter(element);
+            }
+          }
+        });
+
+        $("input[type=file]").on("change", function() {
+          if ($(this).valid()) {
+            if (this.id === "hostsList") {
+              fillHostsTable();
+            } else {
+              fillEmailsTable();
+            }
+          }
+        });
+        $("#start").click(function() {
+          if ($("#massEmailForm").valid()) {
+            start();
+          }
+        });
+
+        $("#stop").click(function() {
+        //  if ($("#pause").length) {
+            stop();
+         // }
+        });
+      }
+
+      async function start() {
+        console.clear();
+          $("#massEmailForm :input")
+            .not("[id=start], [id=stop]")
+            .prop("disabled", true);
+          $("#stop").prop("disabled", false);
+          $("#start").text("pause");
+          $("#start").prop("onclick", null).off("click");
+          $("#start").click( function () {
+            pause();
+          }
+            );
+          if(currentEmail==0 && currentHost==0 && currentHost==0) {
+            $("table").removeClass("table-warning");
+            $("table").removeClass("table-dark");
+            initStatsAndLogs();
+          }
+          else {
+            $("table").removeClass("table-warning");
+          }
+          alert($("#methodOfSend").val());
+          if ($("#methodOfSend").val() === "alternatively") {
+            send("alt");
+          } else {
+            send("reg");
+          }
+      }
+
+      function send(type) {
+        var sendWithEmail = function(errorMsg) {
+          if (!stopStatut && !pauseStatut) {
+            if (!currentEmailPerHost) {
+              if (errorMsg) {
+                addToLog(
+                  currentDateTime(),
+                  selectedHosts[currentHost],
+                  "-",
+                  "Failed host",
+                  errorMsg,
+                  -1
+                );
+              } else {
+                addToLog(
+                  currentDateTime(),
+                  selectedHosts[currentHost],
+                  "-",
+                  "Success host",
+                  "Use of the host",
+                  -1
+                );
+              }
+            } else {
+              if (errorMsg) {
+                updateStats("totalEmailsError");
+                addToLog(
+                  currentDateTime(),
+                  selectedHosts[currentHost],
+                  selectedEmails[currentEmail],
+                  "Failed email",
+                  errorMsg,
+                  currentEmail + 1
+                );
+              } else {
+                updateStats("totalEmailsSent");
+                addToLog(
+                  currentDateTime(),
+                  selectedHosts[currentHost],
+                  selectedEmails[currentEmail],
+                  "Success email",
+                  "Send to the email",
+                  currentEmail + 1
+                );
+              }
+              currentEmail++;
+            }
+
+            if (currentEmail != selectedEmails.length) {
+              if (
+                currentEmailPerHost < $("#nbrSendHost").val() &&
+                !(!currentEmailPerHost && errorMsg)
+              ) {
+                currentEmailPerHost++;
+                setTimeout(() => {
+                  sendEmail(
+                    selectedHosts[currentHost],
+                    $("#subject").val(),
+                    $("#message").val(),
+                    selectedEmails[currentEmail].replace(/\s/g, ""),
+                    $("#fromName").val(),
+                    $("#fromEmail").val(),
+                    $("#replyToEmail").val(),
+                    sendWithEmail
+                  );
+                }, $("#pauseSend").val());
+              } else {
+                currentHost++;
+                if(type.includes("alt") && currentHost >= selectedHosts.length) currentHost=0;
+                if (currentHost < selectedHosts.length) {
+                  currentEmailPerHost = 0;
+                  setTimeout(() => {sendEmail(
+                    selectedHosts[currentHost],
+                    "",
+                    "",
+                    "test@test.com",
+                    "",
+                    "",
+                    "",
+                    sendWithEmail);
+                  }, $("#pauseSend").val());
+                } else {
+                  stopUpdateScreen();
+                }
+              }
+            } else {
+              stopUpdateScreen();
+            }
+          } else {
+            if (stopStatut) stopUpdateScreen();
+            if (pauseStatut) pauseUpdateScreen();
+          }
+        };
+       if(!currentEmail && !currentHost) {
+        if (selectedEmails.length && selectedHosts.length) {
+          sendEmail(
+            selectedHosts[0],
+            "",
+            "",
+            "test@test.com",
+            "",
+            "",
+            "",
+            sendWithEmail
+          );
+        } else {
+          stopUpdateScreen();
+        }
+       } 
+       else {
+        if (currentEmailPerHost==0) {
+          sendEmail(
+            selectedHosts[currentHost],
+            "",
+            "",
+            "test@test.com",
+            "",
+            "",
+            "",
+            sendWithEmail
+          );
+        }
+        else {
+        sendEmail(
+                    selectedHosts[currentHost],
+                    $("#subject").val(),
+                    $("#message").val(),
+                    selectedEmails[currentEmail].replace(/\s/g, ""),
+                    $("#fromName").val(),
+                    $("#fromEmail").val(),
+                    $("#replyToEmail").val(),
+                    sendWithEmail
+                  );
+        }
+       }  
+        
+      }
+      
+      function stop() {
+        if( !$("#start").text().includes("start")) {
+          $("#waitModal").modal({backdrop: 'static', keyboard: false});
+          stopStatut = 1;
+        }
+        else {
+          stopUpdateScreen();
+        }
+      }
+
+      function stopUpdateScreen() {
+        $("#waitModal").modal("hide");
+        $("#massEmailForm :input")
+          .not("[id=pause], [id=stop]")
+          .prop("disabled", false);
+        $("#stop").prop("disabled", true);
+        $("#start").text("start");
+        $("#start").prop("onclick", null).off("click");
+        $("#start").click( function () {
+            start();
+         });
+        $("table")
+          .not("[id=tableHosts],[id=tableEmails]")
+          .addClass("table-dark");
+          stopStatut = 0;
+          currentHost = 0;
+          currentEmail = 0;
+          currentEmailPerHost = 0;
+      }
+
+      function pauseUpdateScreen() {
+        $("#waitModal").modal("hide");
+        $("#start").text("start");
+        $("#start").prop("onclick", null).off("click");
+          $("#start").click( function () {
+            start();
+         });
+        $("table")
+          .not("[id=tableHosts],[id=tableEmails]")
+          .addClass("table-warning");
+        pauseStatut = 0;
+      }
+
+      function pause() {
+        $("#waitModal").modal({backdrop: 'static', keyboard: false});
+        pauseStatut = 1;
+      }
+
+      init();
+    </script>
+  </body>
+</html>
